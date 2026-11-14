@@ -19,35 +19,36 @@ This project's UI design and color scheme is directly inspired by Pornhub's icon
 - Card Background: `#1a1a1a`
 - Text: `#ffffff` (White)
 
-## 🌟 Features
+## 🌟 Features & Modern Web Guidance
+
+This project introduces **[Modern Web Guidance](https://developer.chrome.com/docs/modern-web-guidance)** standards to audit and modernize [index.html](index.html) while keeping the visual UI completely unchanged.
 
 ### Modern Design
 
-- Responsive grid layout with beautiful cards
-- Smooth animations and transitions
-- Dark theme with modern color scheme
+- Responsive grid layout with signature black-and-orange cards
+- Smooth animations and transitions respecting `prefers-reduced-motion`
+- Native dark color scheme (`<meta name="color-scheme" content="dark">` + `:root { color-scheme: dark; }`) for browser scrollbars and FOUC prevention
 - Optimized for both desktop and mobile devices
 
-### Technical Improvements
+### Modern Web Guidance Enhancements
 
-- Container Queries for more precise responsive design
-- Modern CSS selectors (`:has()`) for enhanced interactions
-- Intersection Observer for optimized scroll performance
-- Secure external links with `rel="noopener noreferrer"`
-
-### Performance Optimizations
-
-- Resource preloading and preconnecting
-- Optimized Font Awesome loading
-- Reduced motion support for accessibility
-- Efficient CSS animations with hardware acceleration
-
-### Security Features
-
-- All external links protected with security attributes
-- Safe resource loading from CDN
-- Content Security Policy ready
-- Cross-origin resource protection
+- **Semantic Markup & Accessibility (`html` / `accessibility`)**:
+  - Semantic `<ul class="link-grid" role="list">` / `<li class="link-card">` structure with `<h3><a>` stretched links (via `::after`), eliminating duplicate screen-reader announcements
+  - Decorative icons marked with `aria-hidden="true"`
+  - Keyboard skip link (`跳到主内容`) targeting `<main id="main-content" tabindex="-1">`
+  - High-contrast `:focus-visible` outlines powered by `:has(> h3 > a:focus-visible)` and `scroll-padding-top` so the sticky `<nav>` never obscures headings or focused cards
+- **Native Scrollspy (`scrollspy`)**:
+  - CSS `scroll-target-group: auto` and `:is(:target-current, .active)` with an `IntersectionObserver` fallback and synchronized `aria-current="true"`
+- **Rendering & Load Performance (`defer-rendering-heavy-content` / `performance`)**:
+  - Below-the-fold sections deferred with `content-visibility: auto` and per-section `contain-intrinsic-block-size`
+  - `<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />` and non-blocking scripts placed at the end of `<body>`
+- **External Subresource Security (`secure-external-subresources`)**:
+  - CDN stylesheets hardened with Subresource Integrity (`integrity="sha384-..."`), `crossorigin="anonymous"`, and `referrerpolicy="no-referrer"`, alongside `<meta name="referrer" content="strict-origin-when-cross-origin" />`
+- **Color, High Contrast & Motion (`color` / `motion`)**:
+  - `@media (forced-colors: active)` boundaries for cards, active navigation links, skip link, and dialogs
+  - Motion transitions and smooth scrolling gated behind `@media (prefers-reduced-motion: no-preference)`
+- **Native Modals (`declarative-dialog-popover-control` / `light-dismiss-a-dialog`)**:
+  - Footer info modals powered by declarative `commandfor` / `command="show-modal"` buttons and `<dialog closedby="any">` with feature-detected fallbacks (`commandForElement` and `closedBy`)
 
 ## 🚀 Deployment Options
 
@@ -77,35 +78,37 @@ This project's UI design and color scheme is directly inspired by Pornhub's icon
 
 ### Adding New Links
 
-Add new links in the appropriate section using this format:
+Add new links inside the appropriate `<ul class="link-grid" role="list">` using this format:
 
 ```html
-<a class="link-card" href="[URL]" target="_blank" rel="noopener noreferrer">
-    <i class="[ICON-CLASS]" aria-hidden="true"></i>
-    <h3>[TITLE]</h3>
-</a>
+<li class="link-card">
+  <i class="[ICON-CLASS]" aria-hidden="true"></i>
+  <h3><a href="[URL]" target="_blank" rel="noopener noreferrer">[TITLE]</a></h3>
+</li>
 ```
 
 ### Modifying Categories
 
-Categories are defined by `<h2>` elements with the `category-title` class:
+Categories are defined by `<section>` elements with `tabindex="-1"` and `<h2 class="category-title">`:
 
 ```html
-<h2 class="category-title" id="[CATEGORY-ID]">[CATEGORY-NAME]</h2>
+<section id="[CATEGORY-ID]" tabindex="-1">
+  <h2 class="category-title">[CATEGORY-NAME]</h2>
+  <ul class="link-grid" role="list">
+    ...
+  </ul>
+</section>
 ```
 
 ## 📱 Browser Support
 
-- Modern browsers with CSS Grid support
-- Fallbacks for older browsers
-- Progressive enhancement approach
+- Modern browsers with CSS Grid, `:has()`, `content-visibility: auto`, and `scroll-target-group` support
+- Built-in progressive enhancement and feature-detected fallbacks (`IntersectionObserver`, `commandForElement`, `closedBy`) for older browsers
 
 ## 🔒 Security
 
-All external links include security attributes:
-
-- `rel="noopener"`: Prevents `window.opener` exploitation
-- `rel="noreferrer"`: Prevents referrer information leakage
+- **External Links**: All outbound card links include `rel="noopener noreferrer"` to prevent `window.opener` exploitation and referrer leakage
+- **External Subresources**: Third-party CDN assets use pinned versions with `integrity` (SRI), `crossorigin="anonymous"`, `referrerpolicy="no-referrer"`, and `<meta name="referrer" content="strict-origin-when-cross-origin" />`
 
 ## 📄 License
 
@@ -124,35 +127,36 @@ This project is open-source and available under the MIT License.
 - 卡片背景：`#1a1a1a`
 - 文字颜色：`#ffffff`（白色）
 
-## 🌟 功能特点
+## 🌟 功能特点与 Modern Web Guidance 规范实践
+
+本项目已引入 **[Modern Web Guidance](https://developer.chrome.com/docs/modern-web-guidance)** 现代 Web 开发最佳实践指南，对 [index.html](index.html) 进行了全面审核与升级，在**完全保持原有视觉 UI 不变**的前提下，全面提升了无障碍访问、渲染性能、安全防护与原生交互体验。
 
 ### 现代设计
 
-- 响应式网格布局，精美卡片设计
-- 流畅的动画和过渡效果
-- 现代深色主题配色
-- 同时优化桌面和移动设备体验
+- 响应式网格布局与标志性黑橙主题卡片
+- 顺滑的悬停动效与滚动过渡，并完整尊重系统减弱动态效果偏好
+- 原生深色模式适配（`<meta name="color-scheme" content="dark">` 与 `:root { color-scheme: dark; }`），优化原生滚动条并防止加载白屏闪烁
+- 针对桌面端与移动端多断点深度适配
 
-### 技术改进
+### 引入 Modern Web Guidance 带来的核心改进
 
-- 使用 Container Queries 实现更精确的响应式设计
-- 采用现代 CSS 选择器（`:has()`）增强交互体验
-- 通过 Intersection Observer 优化滚动性能
-- 使用 `rel="noopener noreferrer"` 确保外部链接安全
-
-### 性能优化
-
-- 资源预加载和预连接
-- 优化 Font Awesome 加载
-- 支持减少动画以提升可访问性
-- 硬件加速的高效 CSS 动画
-
-### 安全特性
-
-- 所有外部链接都添加了安全属性
-- 安全的 CDN 资源加载
-- 支持内容安全策略
-- 跨源资源保护
+- **语义化结构与无障碍访问（`html` / `accessibility`）**：
+  - 将卡片列表升级为 `<ul class="link-grid" role="list">` 与 `<li class="link-card">`，采用 `<h3><a>` + `::after` 整卡点击模式，消除读屏器重复播报并移除对 JS 注入 `aria-label` 的依赖
+  - 为所有纯装饰性图标静态标记 `aria-hidden="true"`
+  - 新增键盘跳转链接（`跳到主内容`）直达 `<main id="main-content" tabindex="-1">`
+  - 借助 `:has(> h3 > a:focus-visible)` 绘制不被裁剪的卡片焦点框，并通过 `scroll-padding-top` 确保吸顶导航栏不会遮挡标题或聚焦卡片
+- **原生 Scrollspy 滚动高亮（`scrollspy`）**：
+  - 使用 CSS 原生 `scroll-target-group: auto` 与 `:is(:target-current, .active)` 自动跟踪当前可见分类，并为不支持的浏览器提供 `IntersectionObserver` 降级与 `aria-current="true"` 同步
+- **渲染与加载性能优化（`defer-rendering-heavy-content` / `performance`）**：
+  - 对首屏以下的分类区块启用 `content-visibility: auto`，并按各分类实际卡片数配置 `contain-intrinsic-block-size`
+  - 为第三方 CDN 添加 `<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />`，并将页面脚本统一后置到 `</body>` 前消除解析阻塞
+- **外部子资源安全（`secure-external-subresources`）**：
+  - 为外链 Font Awesome 样式表配置 SRI 校验（`integrity="sha384-..."`）、`crossorigin="anonymous"` 与 `referrerpolicy="no-referrer"`，并设置文档级 `<meta name="referrer" content="strict-origin-when-cross-origin" />`
+- **色彩、高对比度与动态偏好（`color` / `motion`）**：
+  - 新增 `@media (forced-colors: active)` 规则，保障 Windows 高对比度模式下卡片、激活导航、跳转链接与弹窗的清晰边界
+  - 将位移/缩放动画与平滑滚动统一收敛到 `@media (prefers-reduced-motion: no-preference)`
+- **原生声明式弹窗（`declarative-dialog-popover-control` / `light-dismiss-a-dialog`）**：
+  - 页脚“隐私政策 / 使用条款 / 联系我们”采用 `commandfor` / `command="show-modal"` 与 `<dialog closedby="any">` 原生模态弹窗，并为旧浏览器提供特性检测降级方案（`commandForElement` 与 `closedBy`）
 
 ## 🚀 部署选项
 
@@ -182,35 +186,37 @@ This project is open-source and available under the MIT License.
 
 ### 添加新链接
 
-在适当的区域添加新链接，使用以下格式：
+在对应分类的 `<ul class="link-grid" role="list">` 中按以下格式添加新卡片：
 
 ```html
-<a class="link-card" href="[URL]" target="_blank" rel="noopener noreferrer">
-    <i class="[图标类名]" aria-hidden="true"></i>
-    <h3>[标题]</h3>
-</a>
+<li class="link-card">
+  <i class="[图标类名]" aria-hidden="true"></i>
+  <h3><a href="[URL]" target="_blank" rel="noopener noreferrer">[标题]</a></h3>
+</li>
 ```
 
 ### 修改分类
 
-分类使用带有 `category-title` 类的 `<h2>` 元素定义：
+分类使用带有 `tabindex="-1"` 的 `<section>` 元素及 `category-title` 标题定义：
 
 ```html
-<h2 class="category-title" id="[分类ID]">[分类名称]</h2>
+<section id="[分类ID]" tabindex="-1">
+  <h2 class="category-title">[分类名称]</h2>
+  <ul class="link-grid" role="list">
+    ...
+  </ul>
+</section>
 ```
 
 ## 📱 浏览器支持
 
-- 支持具有 CSS Grid 功能的现代浏览器
-- 为旧版浏览器提供降级方案
-- 采用渐进增强方法
+- 支持 CSS Grid、`:has()`、`content-visibility: auto` 与 `scroll-target-group` 的现代浏览器
+- 为旧版浏览器提供基于特性检测的渐进增强与降级方案（`IntersectionObserver`、`commandForElement`、`closedBy`）
 
 ## 🔒 安全性
 
-所有外部链接都包含安全属性：
-
-- `rel="noopener"`：防止 `window.opener` 漏洞利用
-- `rel="noreferrer"`：防止泄露引用来源信息
+- **外部链接安全**：所有卡片外链均配置 `rel="noopener noreferrer"`，防止 `window.opener` 漏洞并避免引用来源泄露
+- **外部子资源校验**：第三方 CDN 样式表启用固定版本 + SRI 完整性校验（`integrity`）、`crossorigin="anonymous"`、`referrerpolicy="no-referrer"` 与文档级 `<meta name="referrer" content="strict-origin-when-cross-origin" />`
 
 ## 📄 许可证
 
