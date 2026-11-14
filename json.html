@@ -4,12 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>WebNav Hub</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.0/css/all.min.css" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"
+    integrity="sha384-qrALq7+6jBOZIQsNnT6xGkMDru64qD6uTlDra39xrt2SoXl4pO3FX6Roz/RpR/BS"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer" />
   <style>
     /* 原有 CSS 保持完全不变 */
     :root {
+      color-scheme: dark;
       --primary-color: #ff9000;
       --bg-color: #0d0d0d;
       --card-bg-color: #1a1a1a;
@@ -18,6 +25,13 @@
 
     html {
       font-size: 16px;
+      scroll-padding-top: 4.5rem;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html {
+        scroll-behavior: smooth;
+      }
     }
 
     body {
@@ -27,6 +41,23 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
+    }
+
+    .skip-link {
+      position: absolute;
+      inset-block-start: -100%;
+      inset-inline-start: 1rem;
+      z-index: 2000;
+      background-color: var(--primary-color);
+      color: #000;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      inset-block-start: 1rem;
     }
 
     header {
@@ -43,7 +74,7 @@
       text-transform: uppercase;
     }
 
-    nav {
+    header + nav {
       background-color: var(--card-bg-color);
       padding: 0.5rem;
       position: sticky;
@@ -51,20 +82,21 @@
       z-index: 1000;
     }
 
-    nav ul {
+    header + nav ul {
       list-style-type: none;
       padding: 0;
       margin: 0;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
+      scroll-target-group: auto;
     }
 
-    nav li {
+    header + nav li {
       margin: 0.3rem;
     }
 
-    nav a {
+    header + nav a {
       color: var(--text-color);
       text-decoration: none;
       font-size: 1rem;
@@ -72,18 +104,36 @@
       padding: 0.5rem 0.8rem;
       border-radius: 1.25rem;
       transition: background-color 0.3s, color 0.3s;
+      display: inline-block;
     }
 
-    nav a:hover,
-    nav a.active {
+    header + nav a:hover,
+    header + nav a.active {
       background-color: var(--primary-color);
       color: #000;
+    }
+
+    header + nav a:target-current {
+      background-color: var(--primary-color);
+      color: #000;
+    }
+
+    header + nav a:focus-visible,
+    footer nav button:focus-visible,
+    .dialog-close:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
     }
 
     main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 1rem;
+    }
+
+    main section[id] {
+      content-visibility: auto;
+      contain-intrinsic-block-size: auto 320px;
     }
 
     .category-title {
@@ -100,7 +150,9 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin: 0 0 2rem;
+      padding: 0;
+      list-style: none;
     }
 
     .link-card {
@@ -119,21 +171,16 @@
       overflow: hidden;
     }
 
-    .link-card a {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      text-decoration: none;
-      z-index: 12;
-      display: block;
-    }
-
     .link-card:hover {
       background-color: #2a2a2a;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .link-card:has(> h3 > a:focus-visible) {
+      background-color: #2a2a2a;
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
     }
 
     .link-card i {
@@ -141,8 +188,6 @@
       margin-bottom: 0.7rem;
       color: var(--primary-color);
       transition: transform 0.2s ease;
-      position: relative;
-      z-index: 11;
     }
 
     .link-card:hover i {
@@ -163,10 +208,25 @@
       line-clamp: 2;
       -webkit-box-orient: vertical;
       text-overflow: ellipsis;
+      overflow-wrap: anywhere;
       white-space: normal;
       padding: 0 0.3rem;
-      position: relative;
-      z-index: 11;
+    }
+
+    .link-card h3 a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .link-card h3 a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .link-card h3 a:focus-visible {
+      outline: none;
     }
 
     footer {
@@ -182,10 +242,62 @@
       background-color: transparent;
     }
 
-    footer nav a {
+    footer nav button {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-family: inherit;
       color: #ccc;
       margin: 0 0.6rem;
       font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    footer nav button:hover {
+      color: var(--text-color);
+    }
+
+    .site-dialog {
+      background-color: var(--card-bg-color);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      max-width: 28rem;
+      width: calc(100% - 2rem);
+      padding: 1.25rem 1.4rem;
+      margin: auto;
+    }
+
+    .site-dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.72);
+    }
+
+    .site-dialog h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+
+    .site-dialog p {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      color: #d4d4d4;
+    }
+
+    .site-dialog form {
+      text-align: end;
+    }
+
+    .dialog-close {
+      background-color: var(--primary-color);
+      color: #000;
+      border: 0;
+      border-radius: 6px;
+      padding: 0.4rem 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
     }
 
     @media (max-width: 1200px) {
@@ -203,6 +315,7 @@
     @media (max-width: 768px) {
       html {
         font-size: 15px;
+        scroll-padding-top: 6.5rem;
       }
 
       main {
@@ -214,11 +327,11 @@
         gap: 0.8rem;
       }
 
-      nav {
+      header + nav {
         padding: 0.4rem;
       }
 
-      nav a {
+      header + nav a {
         padding: 0.4rem 0.7rem;
         font-size: 0.95rem;
       }
@@ -240,7 +353,7 @@
 
       .link-card h3 {
         font-size: 0.8rem;
-        height: 2.4em;
+        height: 2.6em;
       }
     }
 
@@ -262,11 +375,11 @@
         font-size: 1.6rem;
       }
 
-      nav li {
+      header + nav li {
         margin: 0.25rem;
       }
 
-      nav a {
+      header + nav a {
         padding: 0.35rem 0.6rem;
         font-size: 0.9rem;
       }
@@ -289,14 +402,14 @@
       .link-card h3 {
         font-size: 0.75rem;
         padding: 0 0.2rem;
-        height: 2.4em;
+        height: 2.6em;
       }
 
       footer {
         padding: 0.8rem;
       }
 
-      footer nav a {
+      footer nav button {
         margin: 0 0.4rem;
         font-size: 0.7rem;
       }
@@ -329,10 +442,115 @@
       .link-card h3 {
         font-size: 0.7rem;
         padding: 0 0.15rem;
-        height: 2.2em;
+        height: 2.6em;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .link-card,
+      .link-card i,
+      header + nav a {
+        transition: none;
+      }
+
+      .link-card:hover,
+      .link-card:hover i {
+        transform: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      header + nav a.active,
+      header + nav a:target-current {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        color: HighlightText;
+      }
+
+      .category-title {
+        border-left-color: Highlight;
+      }
+
+      .link-card {
+        border: 1px solid CanvasText;
+      }
+
+      .link-card:hover,
+      .link-card:has(> h3 > a:focus-visible) {
+        border-color: Highlight;
+      }
+
+      .link-card h3 a:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -4px;
+      }
+
+      .site-dialog {
+        border: 2px solid CanvasText;
+      }
+
+      .dialog-close {
+        border: 1px solid ButtonBorder;
       }
     }
   </style>
+
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">跳转到主要内容</a>
+  <header>
+    <h1>WebNav Hub</h1>
+  </header>
+  <nav aria-label="网站分类">
+    <ul>
+      <li><a href="#ai-search">Ai搜索</a></li>
+      <li><a href="#social">托管社交</a></li>
+      <li><a href="#tools">实用工具</a></li>
+      <li><a href="#tech-news">科技资讯</a></li>
+      <li><a href="#cloud-storage">云存储</a></li>
+      <li><a href="#email">电子邮箱</a></li>
+    </ul>
+  </nav>
+
+  <!-- 所有的分类和卡片都会被 JavaScript 动态渲染到这里 -->
+  <main id="main-content">
+    <!-- 渲染中/如果JS被禁用时的占位回退 -->
+    <p style="text-align: center; color: #888;">正在加载导航数据...</p>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> WebNav Hub. 保留所有权利。</p>
+    <nav aria-label="页脚信息">
+      <button type="button" commandfor="dialog-privacy" command="show-modal">隐私政策</button>
+      <button type="button" commandfor="dialog-terms" command="show-modal">使用条款</button>
+      <button type="button" commandfor="dialog-contact" command="show-modal">联系我们</button>
+    </nav>
+  </footer>
+
+  <dialog id="dialog-privacy" class="site-dialog" closedby="any" aria-labelledby="dialog-privacy-title">
+    <h2 id="dialog-privacy-title">隐私政策</h2>
+    <p>WebNav Hub 为纯静态个人导航站点，不主动收集、存储或上传个人身份信息；访问第三方外链时请留意目标站点的隐私说明。</p>
+    <form method="dialog">
+      <button type="submit" class="dialog-close">关闭</button>
+    </form>
+  </dialog>
+
+  <dialog id="dialog-terms" class="site-dialog" closedby="any" aria-labelledby="dialog-terms-title">
+    <h2 id="dialog-terms-title">使用条款</h2>
+    <p>本页面仅提供常用网络服务入口聚合，外部网站内容、可用性及服务条款均由对应运营方负责。</p>
+    <form method="dialog">
+      <button type="submit" class="dialog-close">关闭</button>
+    </form>
+  </dialog>
+
+  <dialog id="dialog-contact" class="site-dialog" closedby="any" aria-labelledby="dialog-contact-title">
+    <h2 id="dialog-contact-title">联系我们</h2>
+    <p>如需反馈失效链接或补充优质网站，欢迎通过项目仓库提交 Issue 或 Pull Request。</p>
+    <form method="dialog">
+      <button type="submit" class="dialog-close">关闭</button>
+    </form>
+  </dialog>
 
   <script>
     // --- 1. 数据驱动配置：所有网站数据都在这里维护 ---
@@ -568,123 +786,169 @@
       }
     ];
 
+    function sanitizeURL(url) {
+      const s = String(url).trim();
+      return /^https?:\/\//i.test(s) ? s : '#';
+    }
+
+    function sanitizeIconClass(cls) {
+      return String(cls).replace(/[^a-zA-Z0-9\s\-_]/g, '');
+    }
+
     // --- 2. 动态渲染函数 ---
     function renderNavCards() {
       const mainContainer = document.getElementById('main-content');
       if (!mainContainer) return;
 
-      // 清空占位符内容
-      mainContainer.innerHTML = '';
+      const frag = document.createDocumentFragment();
 
       navData.forEach(category => {
-        // 创建分类区块 <section>
         const section = document.createElement('section');
         section.id = category.id;
+        section.tabIndex = -1;
 
-        // 创建分类标题
         const title = document.createElement('h2');
         title.className = 'category-title';
         title.textContent = category.title;
         section.appendChild(title);
 
-        // 创建网格容器
-        const grid = document.createElement('div');
+        const grid = document.createElement('ul');
         grid.className = 'link-grid';
+        grid.setAttribute('role', 'list');
 
-        // 遍历生成卡片
         category.links.forEach(link => {
-          const card = document.createElement('div');
+          const card = document.createElement('li');
           card.className = 'link-card';
-          // 动态注入 aria-label 增强无障碍体验
-          card.innerHTML = `
-            <a href="${link.url}" target="_blank" rel="noopener noreferrer" aria-label="${link.name}"></a>
-            <i class="${link.icon}"></i>
-            <h3>${link.name}</h3>
-          `;
+
+          const icon = document.createElement('i');
+          icon.className = sanitizeIconClass(link.icon);
+          icon.setAttribute('aria-hidden', 'true');
+
+          const h3 = document.createElement('h3');
+          const a = document.createElement('a');
+          a.href = sanitizeURL(link.url);
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = link.name;
+
+          h3.appendChild(a);
+          card.appendChild(icon);
+          card.appendChild(h3);
           grid.appendChild(card);
         });
 
         section.appendChild(grid);
-        mainContainer.appendChild(section);
+        frag.appendChild(section);
       });
+
+      mainContainer.replaceChildren(frag);
     }
 
     // --- 3. 页面初始化及事件绑定 ---
-    document.addEventListener("DOMContentLoaded", function () {
-      
-      // 步骤1: 根据数据渲染完整的页面 DOM
+    (function () {
+      document.getElementById('year').textContent = new Date().getFullYear();
+
       renderNavCards();
 
-      // 步骤2: 绑定顶部导航的交互逻辑
-      var navLinks = document.querySelectorAll("nav a");
+      const navLinks = Array.from(document.querySelectorAll('header + nav a'));
+      const sections = Array.from(document.querySelectorAll('main section[id]'));
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const supportsScrollTargetGroup = CSS.supports('scroll-target-group', 'auto');
 
-      navLinks.forEach(function (link) {
-        link.addEventListener("click", function (e) {
+      function setActiveLink(targetLink) {
+        navLinks.forEach((l) => {
+          l.classList.remove('active');
+          l.removeAttribute('aria-current');
+        });
+        if (targetLink) {
+          targetLink.classList.add('active');
+          targetLink.setAttribute('aria-current', 'true');
+        }
+      }
+
+      navLinks.forEach((link) => {
+        link.addEventListener('click', (e) => {
           e.preventDefault();
-          navLinks.forEach((l) => l.classList.remove("active"));
-          this.classList.add("active");
-          var targetId = this.getAttribute("href").split("#")[1];
-          var targetElement = document.getElementById(targetId);
+          setActiveLink(link);
+          const targetId = link.getAttribute('href').slice(1);
+          const targetElement = document.getElementById(targetId);
           if (targetElement) {
-            targetElement.scrollIntoView({ behavior: "smooth" });
-            var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "#" + targetId;
-            window.history.pushState({ path: newUrl }, "", newUrl);
+            targetElement.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+            history.pushState(null, '', '#' + targetId);
           }
         });
       });
 
-      // 步骤3: 监听 Hash 变化，同步更新高亮状态
       function handleHashChange() {
-        var hash = window.location.hash;
-        if (hash) {
-          var targetElement = document.getElementById(hash.substring(1));
-          if (targetElement) {
-            targetElement.scrollIntoView({ behavior: "smooth" });
-            var activeLink = document.querySelector('nav a[href="' + hash + '"]');
-            if (activeLink) {
-              navLinks.forEach((l) => l.classList.remove("active"));
-              activeLink.classList.add("active");
-            }
-          }
+        const hash = window.location.hash;
+        if (!hash) return;
+        const targetElement = document.getElementById(hash.slice(1));
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+          const activeLink = navLinks.find((l) => l.getAttribute('href') === hash);
+          if (activeLink) setActiveLink(activeLink);
         }
       }
 
-      window.addEventListener("hashchange", handleHashChange);
-      handleHashChange(); // 初次加载时执行一次
-    });
+      window.addEventListener('hashchange', handleHashChange);
+      handleHashChange();
+
+      if (supportsScrollTargetGroup) {
+        let syncTimer;
+        function syncAriaCurrentFromTarget() {
+          clearTimeout(syncTimer);
+          syncTimer = setTimeout(() => {
+            let current = null;
+            for (const link of navLinks) {
+              try {
+                if (link.matches(':target-current')) {
+                  current = link;
+                  break;
+                }
+              } catch (_) {}
+            }
+            if (!current && sections.length > 0 && window.scrollY < 100) {
+              current = navLinks[0] || null;
+            }
+            if (current) {
+              setActiveLink(current);
+            }
+          }, 60);
+        }
+        window.addEventListener('scroll', syncAriaCurrentFromTarget, { passive: true });
+        window.addEventListener('scrollend', syncAriaCurrentFromTarget, { passive: true });
+        window.addEventListener('hashchange', syncAriaCurrentFromTarget);
+        syncAriaCurrentFromTarget();
+      } else if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const activeLink = navLinks.find((l) => l.getAttribute('href') === '#' + entry.target.id);
+              if (activeLink) setActiveLink(activeLink);
+            }
+          }
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        sections.forEach((sec) => observer.observe(sec));
+      }
+
+      if (!('commandForElement' in HTMLButtonElement.prototype)) {
+        document.querySelectorAll('button[commandfor][command="show-modal"]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const dlg = document.getElementById(btn.getAttribute('commandfor'));
+            if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+          });
+        });
+      }
+
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        document.querySelectorAll('dialog[closedby="any"]').forEach((dlg) => {
+          dlg.addEventListener('click', (e) => {
+            if (e.target === dlg) dlg.close();
+          });
+        });
+      }
+    })();
   </script>
-</head>
-
-<body>
-  <header>
-    <h1>WebNav Hub</h1>
-  </header>
-  <nav>
-    <ul>
-      <li><a href="#ai-search">Ai搜索</a></li>
-      <li><a href="#social">托管社交</a></li>
-      <li><a href="#tools">实用工具</a></li>
-      <li><a href="#tech-news">科技资讯</a></li>
-      <li><a href="#cloud-storage">云存储</a></li>
-      <li><a href="#email">电子邮箱</a></li>
-    </ul>
-  </nav>
-
-  <!-- 所有的分类和卡片都会被 JavaScript 动态渲染到这里 -->
-  <main id="main-content">
-      <!-- 渲染中/如果JS被禁用时的占位回退 -->
-      <p style="text-align: center; color: #888;">正在加载导航数据...</p>
-  </main>
-
-  <footer>
-    <p>© <span id="year"></span> WebNav Hub. 保留所有权利。</p>
-    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
-    <nav>
-      <a href="#">隐私政策</a>
-      <a href="#">使用条款</a>
-      <a href="#">联系我们</a>
-    </nav>
-  </footer>
 </body>
 
 </html>

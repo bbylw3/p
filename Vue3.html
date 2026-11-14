@@ -4,19 +4,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>WebNav Hub - 现代个人导航站</title>
   
   <!-- 精美 SVG 浏览器标签页图标 (Favicon) -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   
-  <!-- 引入最新 Vue 3 全局构建版 -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- 引入锁版本 + SRI 校验的 Vue 3 生产构建版 -->
+  <script src="https://unpkg.com/vue@3.5.45/dist/vue.global.prod.js"
+    integrity="sha384-K2FjvpG1y48yCE+7CBPhnKc16ShPmT3dlNwvoA3dhjV18+L5ugI0P8PWPvdjm/Fa"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
   
   <!-- 引入 Tailwind CSS 构建优雅流畅 UI -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" referrerpolicy="no-referrer"></script>
   
-  <!-- 引入 FontAwesome 图标库 (与原项目一致) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.0/css/all.min.css" />
+  <!-- 引入 FontAwesome 图标库 (与原项目一致，附带 SRI) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"
+    integrity="sha384-qrALq7+6jBOZIQsNnT6xGkMDru64qD6uTlDra39xrt2SoXl4pO3FX6Roz/RpR/BS"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer" />
 
   <!-- 自定义 Tailwind 配置，便于对接主题 CSS 变量 -->
   <script>
@@ -47,6 +58,7 @@
   <style>
     /* 统一的经典橙黑极客主题 (无多套主题切换) */
     :root {
+      color-scheme: dark;
       --theme-bg: #0d0d0d;
       --theme-header-bg: #000000;
       --theme-card-bg: #1a1a1a;
@@ -59,9 +71,100 @@
       --theme-border: #262626;
     }
 
+    [v-cloak] {
+      display: none;
+    }
+
+    html {
+      scroll-padding-top: 9rem;
+    }
+
+    @media (min-width: 768px) {
+      html {
+        scroll-padding-top: 8.5rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html {
+        scroll-behavior: smooth;
+      }
+    }
+
     body {
       transition: background-color 0.3s ease, color 0.3s ease;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .skip-link {
+      position: absolute;
+      inset-block-start: -100%;
+      inset-inline-start: 1rem;
+      z-index: 2000;
+      background-color: var(--theme-accent);
+      color: #000;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      inset-block-start: 1rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      clip-path: inset(50%);
+      overflow: hidden;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      white-space: nowrap;
+    }
+
+    input[type="search"]::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .cv-auto {
+      content-visibility: auto;
+      contain-intrinsic-block-size: auto 320px;
+    }
+
+    .card-link::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .card-link:focus-visible {
+      outline: none;
+    }
+
+    .link-card:has(> h3 > a:focus-visible) {
+      border-color: rgba(255, 144, 0, 0.7);
+      outline: 2px solid var(--theme-accent);
+      outline-offset: 2px;
+    }
+
+    .site-dialog {
+      background-color: var(--theme-card-bg);
+      color: var(--theme-text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 0.75rem;
+      max-width: 28rem;
+      width: calc(100% - 2rem);
+      padding: 1.25rem 1.4rem;
+      margin: auto;
+    }
+
+    .site-dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.72);
     }
 
     /* 自定义滚动条样式 */
@@ -79,15 +182,88 @@
     ::-webkit-scrollbar-thumb:hover {
       background: var(--theme-accent);
     }
-    
-    /* 平滑滚动 */
-    html {
-      scroll-behavior: smooth;
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .animate-scaleIn {
+      animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* 吐司动画 */
+    .toast-list-enter-active,
+    .toast-list-leave-active {
+      transition: all 0.3s ease;
+    }
+    .toast-list-enter-from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
+    }
+    .toast-list-leave-to {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.9);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body,
+      .link-card,
+      .link-card i,
+      .toast-list-enter-active,
+      .toast-list-leave-active {
+        transition: none !important;
+      }
+
+      .animate-scaleIn {
+        animation: none;
+      }
+
+      .link-card:hover {
+        transform: none !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .link-card {
+        border: 1px solid CanvasText;
+      }
+
+      .link-card:hover,
+      .link-card:has(> h3 > a:focus-visible) {
+        border-color: Highlight;
+      }
+
+      .card-link:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: -4px;
+      }
+
+      button[aria-pressed="true"] {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        color: HighlightText;
+      }
+
+      .site-dialog {
+        border: 2px solid CanvasText;
+      }
+
+      .dialog-close {
+        border: 1px solid ButtonBorder;
+      }
     }
   </style>
 </head>
 
 <body class="bg-theme-bg text-theme-textPrimary min-h-screen pb-12">
+  <a class="skip-link" href="#main-content">跳转到主要内容</a>
+
   <div id="app" v-cloak class="transition-all duration-300">
     
     <!-- 1. 顶层快捷操作与主题配置中心 -->
@@ -95,8 +271,8 @@
       <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
         
         <!-- Logo 与版本 -->
-        <div class="flex items-center gap-3 cursor-pointer" @click="resetFilters">
-          <div class="w-10 h-10 rounded-xl bg-theme-accent flex items-center justify-center text-black font-black text-xl shadow-lg shadow-theme-accentLight">
+        <button type="button" class="flex items-center gap-3 cursor-pointer bg-transparent border-0 p-0 text-left focus-visible:outline-2 focus-visible:outline-theme-accent rounded-xl" @click="resetFilters" aria-label="重置筛选并回到顶部">
+          <div class="w-10 h-10 rounded-xl bg-theme-accent flex items-center justify-center text-black font-black text-xl shadow-lg shadow-theme-accentLight" aria-hidden="true">
             W
           </div>
           <div>
@@ -104,73 +280,92 @@
               WebNav <span class="text-theme-accent">Hub</span>
             </h1>
           </div>
-        </div>
+        </button>
 
         <!-- 实时智能搜索框 -->
-        <div class="relative w-full md:max-w-md">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-theme-textSecondary">
+        <search aria-label="站内搜索" class="block relative w-full md:max-w-md">
+          <label for="vue-search-input" class="visually-hidden">搜索网址或名称</label>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-theme-textSecondary" aria-hidden="true">
             <i class="fa-solid fa-magnifying-glass"></i>
           </span>
           <input 
+            id="vue-search-input"
+            name="q"
             ref="searchInput"
             v-model="searchQuery" 
-            type="text" 
+            type="search" 
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+            enterkeyhint="search"
             placeholder="搜索网址、名称... ( 按下 '/' 键聚焦 )" 
-            class="w-full pl-10 pr-10 py-2 rounded-xl bg-theme-bg border border-theme-border text-theme-textPrimary placeholder-theme-textSecondary focus:outline-none focus:border-theme-accent transition-all text-sm shadow-inner"
+            class="w-full pl-10 pr-10 py-2 rounded-xl bg-theme-bg border border-theme-border text-theme-textPrimary placeholder-theme-textSecondary focus:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent focus:border-theme-accent transition-all text-sm shadow-inner"
           />
           <button 
+            type="button"
             v-if="searchQuery" 
             @click="clearSearch"
-            class="absolute inset-y-0 right-0 flex items-center pr-3 text-theme-textSecondary hover:text-theme-accent"
+            aria-label="清空搜索"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-theme-textSecondary hover:text-theme-accent focus-visible:outline-2 focus-visible:outline-theme-accent rounded-r-xl"
           >
-            <i class="fa-solid fa-circle-xmark"></i>
+            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
           </button>
-          <span v-else class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[10px] text-theme-textSecondary font-mono hidden sm:inline-block">
+          <span v-else class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[10px] text-theme-textSecondary font-mono hidden sm:inline-block" aria-hidden="true">
             /
           </span>
-        </div>
+          <p class="visually-hidden" role="status" aria-live="polite">{{ searchStatusText }}</p>
+        </search>
 
       </div>
     </header>
 
     <!-- 2. 分类快速跳转 (固定的副导航) -->
-    <nav class="bg-theme-card/90 backdrop-blur border-b border-theme-border sticky top-[120px] md:top-[65px] z-40 transition-all">
+    <nav aria-label="网站分类" class="bg-theme-card/90 backdrop-blur border-b border-theme-border sticky top-[120px] md:top-[65px] z-40 transition-all">
       <div class="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-x-auto py-2 scrollbar-none gap-4">
         
         <!-- 分类列表 -->
         <div class="flex items-center gap-2 whitespace-nowrap">
           <button 
+            type="button"
             @click="switchCategory('all')"
-            class="px-4 py-1.5 rounded-full text-xs font-bold transition-all"
+            :aria-pressed="activeCategory === 'all'"
+            class="px-4 py-1.5 rounded-full text-xs font-bold transition-all focus-visible:outline-2 focus-visible:outline-theme-accent"
             :class="activeCategory === 'all' ? 'bg-theme-accent text-black shadow-md' : 'text-theme-textSecondary hover:text-theme-textPrimary hover:bg-theme-hoverCard'"
           >
             全部显示
           </button>
           
           <button 
+            type="button"
             v-for="cat in categories" 
             :key="cat.key"
             @click="switchCategory(cat.key)"
-            class="px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
+            :aria-pressed="activeCategory === cat.key"
+            class="px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-theme-accent"
             :class="activeCategory === cat.key ? 'bg-theme-accent text-black shadow-md' : 'text-theme-textSecondary hover:text-theme-textPrimary hover:bg-theme-hoverCard'"
           >
-            <i :class="cat.icon"></i>
+            <i :class="cat.icon" aria-hidden="true"></i>
             {{ cat.name }}
           </button>
         </div>
 
         <!-- 视图切换模式 -->
-        <div class="flex items-center bg-theme-bg p-1 rounded-lg border border-theme-border text-[10px] shrink-0 font-bold hidden lg:flex">
+        <div class="flex items-center bg-theme-bg p-1 rounded-lg border border-theme-border text-[10px] shrink-0 font-bold hidden lg:flex" role="group" aria-label="视图模式">
           <button 
+            type="button"
             @click="viewMode = 'scroll'" 
-            class="px-2.5 py-1 rounded transition-all"
+            :aria-pressed="viewMode === 'scroll'"
+            class="px-2.5 py-1 rounded transition-all focus-visible:outline-2 focus-visible:outline-theme-accent"
             :class="viewMode === 'scroll' ? 'bg-theme-accent text-black shadow' : 'text-theme-textSecondary hover:text-theme-textPrimary'"
           >
             平滑滚动
           </button>
           <button 
+            type="button"
             @click="viewMode = 'filter'" 
-            class="px-2.5 py-1 rounded transition-all"
+            :aria-pressed="viewMode === 'filter'"
+            class="px-2.5 py-1 rounded transition-all focus-visible:outline-2 focus-visible:outline-theme-accent"
             :class="viewMode === 'filter' ? 'bg-theme-accent text-black shadow' : 'text-theme-textSecondary hover:text-theme-textPrimary'"
           >
             单栏标签
@@ -181,11 +376,11 @@
     </nav>
 
     <!-- 主展示空间 -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
+    <main id="main-content" tabindex="-1" class="max-w-7xl mx-auto px-4 py-6">
 
       <!-- 搜索无结果提示 -->
-      <div v-if="searchQuery && totalMatchedCount === 0" class="text-center py-16 bg-theme-card rounded-2xl border border-theme-border my-8">
-        <i class="fa-solid fa-face-frown text-4xl text-theme-accent mb-3 block"></i>
+      <div v-if="searchQuery && totalMatchedCount === 0" class="text-center py-16 bg-theme-card rounded-2xl border border-theme-border my-8" role="status">
+        <i class="fa-solid fa-face-frown text-4xl text-theme-accent mb-3 block" aria-hidden="true"></i>
         <p class="text-lg font-bold text-theme-textPrimary mb-2">未找到匹配的网站</p>
         <p class="text-sm text-theme-textSecondary">试着换一个关键词重新搜索吧！</p>
       </div>
@@ -195,32 +390,36 @@
         
         <!-- Pinned 常用收藏面板 -->
         <section v-if="pinnedLinks.length > 0" class="bg-theme-card/30 rounded-2xl p-4 border border-theme-accent/20 shadow-lg relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-theme-accent/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="absolute top-0 right-0 w-32 h-32 bg-theme-accent/5 rounded-full blur-2xl pointer-events-none" aria-hidden="true"></div>
           <h2 class="text-sm font-black tracking-wider text-theme-accent uppercase flex items-center gap-2 mb-3">
-            <i class="fa-solid fa-star text-amber-400"></i> 我的常用收藏 ({{ pinnedLinks.length }})
+            <i class="fa-solid fa-star text-amber-400" aria-hidden="true"></i> 我的常用收藏 ({{ pinnedLinks.length }})
           </h2>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-            <div 
+          <ul role="list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 list-none p-0 m-0">
+            <li 
               v-for="link in pinnedLinks" 
               :key="link.id"
-              class="group relative bg-theme-card border border-theme-border hover:border-theme-accent/50 rounded-xl p-3 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg shadow-black/20 min-h-[96px] cursor-pointer"
-              @click="handleLinkClick(link)"
+              class="link-card group relative bg-theme-card border border-theme-border hover:border-theme-accent/50 rounded-xl p-3 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg shadow-black/20 min-h-[96px] cursor-pointer"
             >
               <!-- 快捷取消收藏 -->
               <button 
-                @click.stop="togglePin(link.id)"
-                class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 text-amber-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px]"
+                type="button"
+                @click="togglePin(link.id)"
+                :aria-label="'取消收藏 ' + link.title"
+                :aria-pressed="true"
+                class="z-20 absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/40 text-amber-400 opacity-100 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-[10px] focus-visible:outline-2 focus-visible:outline-theme-accent"
                 title="取消收藏"
               >
-                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
               </button>
               
-              <div class="text-xl text-theme-accent mb-2 transform group-hover:scale-110 transition-transform">
+              <div class="text-xl text-theme-accent mb-2 transform group-hover:scale-110 transition-transform" aria-hidden="true">
                 <i :class="link.icon || 'fa-solid fa-globe'"></i>
               </div>
-              <span class="text-xs font-semibold text-theme-textPrimary truncate w-full px-1">{{ link.title }}</span>
-            </div>
-          </div>
+              <h3 class="text-xs font-semibold text-theme-textPrimary truncate w-full px-1 m-0">
+                <a :href="sanitizeURL(link.url)" target="_blank" rel="noopener noreferrer" class="card-link text-inherit no-underline">{{ link.title }}</a>
+              </h3>
+            </li>
+          </ul>
         </section>
 
       </div>
@@ -231,49 +430,53 @@
           v-for="cat in activeCategoriesList" 
           :key="cat.key" 
           :id="cat.key"
+          tabindex="-1"
           class="category-section scroll-mt-36"
+          :class="{ 'cv-auto': !searchQuery }"
         >
           <!-- 类别标签头 -->
           <div class="flex items-center justify-between border-b border-theme-border pb-2 mb-4">
-            <h3 class="text-base font-black tracking-widest text-theme-accent uppercase flex items-center gap-2">
-              <span class="w-1.5 h-4 bg-theme-accent rounded-sm"></span>
-              <i :class="cat.icon" class="text-sm"></i>
+            <h2 class="text-base font-black tracking-widest text-theme-accent uppercase flex items-center gap-2">
+              <span class="w-1.5 h-4 bg-theme-accent rounded-sm" aria-hidden="true"></span>
+              <i :class="cat.icon" class="text-sm" aria-hidden="true"></i>
               {{ cat.name }}
-            </h3>
+            </h2>
             <span class="text-[10px] text-theme-textSecondary tracking-wider uppercase font-mono hidden sm:inline">SECTION // {{ cat.key }}</span>
           </div>
 
           <!-- 卡片网格 -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+          <ul role="list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 list-none p-0 m-0">
             
-            <div 
+            <li 
               v-for="link in filteredLinksMap[cat.key]" 
               :key="link.id"
-              class="group relative bg-theme-card border border-theme-border hover:border-theme-accent/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 min-h-[105px] cursor-pointer"
-              @click="handleLinkClick(link)"
+              class="link-card group relative bg-theme-card border border-theme-border hover:border-theme-accent/50 rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 min-h-[105px] cursor-pointer"
             >
               <!-- 快捷收藏 Pin -->
               <button 
-                @click.stop="togglePin(link.id)"
-                class="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-[11px] transition-all"
+                type="button"
+                @click="togglePin(link.id)"
+                :aria-label="(isPinned(link.id) ? '取消收藏 ' : '加入常用 ') + link.title"
+                :aria-pressed="isPinned(link.id)"
+                class="z-20 absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-[11px] transition-all focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-theme-accent"
                 :class="isPinned(link.id) ? 'bg-theme-accentLight text-amber-400 opacity-100' : 'bg-black/30 text-theme-textSecondary opacity-0 group-hover:opacity-100 hover:text-amber-400'"
                 :title="isPinned(link.id) ? '取消收藏' : '加入常用'"
               >
-                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star" aria-hidden="true"></i>
               </button>
 
               <!-- 图标 -->
-              <div class="text-2xl text-theme-accent mb-2.5 transform group-hover:scale-110 transition-transform">
+              <div class="text-2xl text-theme-accent mb-2.5 transform group-hover:scale-110 transition-transform" aria-hidden="true">
                 <i :class="link.icon || 'fa-solid fa-globe'"></i>
               </div>
 
               <!-- 标题 -->
-              <h4 class="text-xs font-bold text-theme-textPrimary line-clamp-2 max-w-full px-1 group-hover:text-theme-accent transition-colors leading-tight">
-                {{ link.title }}
-              </h4>
-            </div>
+              <h3 class="text-xs font-bold text-theme-textPrimary line-clamp-2 max-w-full px-1 group-hover:text-theme-accent transition-colors leading-tight m-0">
+                <a :href="sanitizeURL(link.url)" target="_blank" rel="noopener noreferrer" class="card-link text-inherit no-underline">{{ link.title }}</a>
+              </h3>
+            </li>
 
-          </div>
+          </ul>
         </section>
       </div>
 
@@ -282,22 +485,26 @@
     <!-- 5. 飘浮工具箱 (返回顶部) -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
       <button 
+        type="button"
         @click="scrollToTop"
         ref="btnTop"
-        class="w-10 h-10 rounded-xl bg-theme-card hover:bg-theme-hoverCard border border-theme-border text-theme-accent flex items-center justify-center shadow-lg transition-all transform hover:-translate-y-1 opacity-0 pointer-events-none"
-        :class="{'opacity-100 pointer-events-auto': showBackToTop}"
+        :tabindex="showBackToTop ? 0 : -1"
+        aria-label="返回顶部"
+        class="w-10 h-10 rounded-xl bg-theme-card hover:bg-theme-hoverCard border border-theme-border text-theme-accent flex items-center justify-center shadow-lg transition-all transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-theme-accent"
+        :class="showBackToTop ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'"
         title="返回顶部"
       >
-        <i class="fa-solid fa-arrow-up"></i>
+        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
       </button>
     </div>
 
     <!-- 6. Vue 高级 Toast 通知组件 -->
-    <div class="fixed bottom-6 left-6 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div class="fixed bottom-6 left-6 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none" role="region" aria-label="操作提示" aria-live="polite">
       <transition-group name="toast-list">
         <div 
           v-for="toast in toasts" 
           :key="toast.id" 
+          role="status"
           class="p-4 rounded-xl shadow-2xl border flex items-center gap-3 pointer-events-auto animate-slideUp text-xs font-bold"
           :class="{
             'bg-zinc-900 border-theme-accent text-theme-textPrimary': toast.type === 'success',
@@ -305,9 +512,9 @@
             'bg-zinc-900 border-theme-border text-theme-textSecondary': toast.type === 'info',
           }"
         >
-          <i v-if="toast.type === 'success'" class="fa-solid fa-circle-check text-theme-accent"></i>
-          <i v-else-if="toast.type === 'error'" class="fa-solid fa-circle-exclamation text-red-500"></i>
-          <i v-else class="fa-solid fa-circle-info text-blue-400"></i>
+          <i v-if="toast.type === 'success'" class="fa-solid fa-circle-check text-theme-accent" aria-hidden="true"></i>
+          <i v-else-if="toast.type === 'error'" class="fa-solid fa-circle-exclamation text-red-500" aria-hidden="true"></i>
+          <i v-else class="fa-solid fa-circle-info text-blue-400" aria-hidden="true"></i>
           <span class="flex-1">{{ toast.message }}</span>
         </div>
       </transition-group>
@@ -316,16 +523,40 @@
     <!-- 页脚区块 -->
     <footer class="mt-16 bg-theme-header border-t border-theme-border py-8 text-center text-theme-textSecondary text-xs">
       <div class="max-w-7xl mx-auto px-4 space-y-4">
-        <p>© 2026 WebNav Hub. 由 Vue 3 全景响应式强力重构驱动。保留所有权利。</p>
-        <nav class="flex justify-center gap-4 text-xs">
-          <a href="#" class="hover:text-theme-accent transition-colors">隐私政策</a>
-          <a href="#" class="hover:text-theme-accent transition-colors">使用条款</a>
-          <a href="#" class="hover:text-theme-accent transition-colors">联系我们</a>
+        <p>© {{ currentYear }} WebNav Hub. 由 Vue 3 全景响应式强力重构驱动。保留所有权利。</p>
+        <nav aria-label="页脚信息" class="flex justify-center gap-4 text-xs">
+          <button type="button" commandfor="dialog-privacy" command="show-modal" class="bg-transparent border-0 p-0 font-inherit text-inherit hover:text-theme-accent transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent rounded">隐私政策</button>
+          <button type="button" commandfor="dialog-terms" command="show-modal" class="bg-transparent border-0 p-0 font-inherit text-inherit hover:text-theme-accent transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent rounded">使用条款</button>
+          <button type="button" commandfor="dialog-contact" command="show-modal" class="bg-transparent border-0 p-0 font-inherit text-inherit hover:text-theme-accent transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent rounded">联系我们</button>
         </nav>
       </div>
     </footer>
 
   </div>
+
+  <dialog id="dialog-privacy" class="site-dialog" closedby="any" aria-labelledby="dialog-privacy-title">
+    <h2 id="dialog-privacy-title" class="text-base font-bold text-theme-accent mb-2">隐私政策</h2>
+    <p class="text-sm text-theme-textSecondary mb-4 leading-relaxed">WebNav Hub 为纯静态个人导航站点，常用收藏仅保存在您的浏览器本地存储中，不向服务器上传个人信息。</p>
+    <form method="dialog" class="text-right">
+      <button type="submit" class="dialog-close bg-theme-accent text-black border-0 rounded-md px-3.5 py-1.5 text-xs font-bold cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent">关闭</button>
+    </form>
+  </dialog>
+
+  <dialog id="dialog-terms" class="site-dialog" closedby="any" aria-labelledby="dialog-terms-title">
+    <h2 id="dialog-terms-title" class="text-base font-bold text-theme-accent mb-2">使用条款</h2>
+    <p class="text-sm text-theme-textSecondary mb-4 leading-relaxed">本页面仅提供常用网络服务入口聚合，外部网站内容、可用性及服务条款均由对应运营方负责。</p>
+    <form method="dialog" class="text-right">
+      <button type="submit" class="dialog-close bg-theme-accent text-black border-0 rounded-md px-3.5 py-1.5 text-xs font-bold cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent">关闭</button>
+    </form>
+  </dialog>
+
+  <dialog id="dialog-contact" class="site-dialog" closedby="any" aria-labelledby="dialog-contact-title">
+    <h2 id="dialog-contact-title" class="text-base font-bold text-theme-accent mb-2">联系我们</h2>
+    <p class="text-sm text-theme-textSecondary mb-4 leading-relaxed">如需反馈失效链接或补充优质网站，欢迎通过项目仓库提交 Issue 或 Pull Request。</p>
+    <form method="dialog" class="text-right">
+      <button type="submit" class="dialog-close bg-theme-accent text-black border-0 rounded-md px-3.5 py-1.5 text-xs font-bold cursor-pointer focus-visible:outline-2 focus-visible:outline-theme-accent">关闭</button>
+    </form>
+  </dialog>
 
   <script>
     const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
@@ -564,18 +795,47 @@
           { key: 'email', name: '电子邮箱', icon: 'fa-solid fa-envelope' }
         ];
 
+        const currentYear = new Date().getFullYear();
+
+        const sanitizeURL = (url) => {
+          const s = String(url).trim();
+          return /^https?:\/\//i.test(s) ? s : '#';
+        };
+
         // --- 生命周期钩子 ---
         onMounted(() => {
           // 1. 加载默认链接数据
           links.value = [...defaultLinks];
 
           // 2. 加载用户收藏夹
-          const savedPins = localStorage.getItem('webnav_pinned_ids_v3');
-          if (savedPins) pinnedIds.value = JSON.parse(savedPins);
+          try {
+            const savedPins = localStorage.getItem('webnav_pinned_ids_v3');
+            if (savedPins) {
+              const parsed = JSON.parse(savedPins);
+              if (Array.isArray(parsed)) pinnedIds.value = parsed;
+            }
+          } catch (_) {}
 
           // 3. 全局键盘快捷键侦听
           window.addEventListener('keydown', handleGlobalKeydown);
-          window.addEventListener('scroll', handleScrollDebounce);
+          window.addEventListener('scroll', handleScrollDebounce, { passive: true });
+
+          // 4. 对话框特性降级支持
+          if (!('commandForElement' in HTMLButtonElement.prototype)) {
+            document.querySelectorAll('button[commandfor][command="show-modal"]').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const dlg = document.getElementById(btn.getAttribute('commandfor'));
+                if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+              });
+            });
+          }
+          if (!('closedBy' in HTMLDialogElement.prototype)) {
+            document.querySelectorAll('dialog[closedby="any"]').forEach((dlg) => {
+              dlg.addEventListener('click', (e) => {
+                if (e.target === dlg) dlg.close();
+              });
+            });
+          }
         });
 
         onBeforeUnmount(() => {
@@ -585,7 +845,9 @@
 
         // --- 侦听全局键盘触发 ---
         const handleGlobalKeydown = (e) => {
-          if (e.key === '/' && document.activeElement !== searchInput.value) {
+          const active = document.activeElement;
+          const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT' || active.isContentEditable);
+          if (e.key === '/' && !isEditing) {
             e.preventDefault();
             searchInput.value?.focus();
           }
@@ -643,6 +905,15 @@
           return count;
         });
 
+        const searchStatusText = computed(() => {
+          if (!searchQuery.value.trim()) return '';
+          return totalMatchedCount.value > 0
+            ? `找到 ${totalMatchedCount.value} 个匹配网站`
+            : '未找到匹配的网站';
+        });
+
+        const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         // --- 核心业务处理逻辑 ---
 
         // 切换侧边分类标签
@@ -656,8 +927,7 @@
               setTimeout(() => {
                 const el = document.getElementById(catKey);
                 if (el) {
-                  const offset = el.getBoundingClientRect().top + window.scrollY - 130;
-                  window.scrollTo({ top: offset, behavior: 'smooth' });
+                  el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
                 }
               }, 50);
             }
@@ -677,11 +947,6 @@
           searchInput.value?.focus();
         };
 
-        // 点击打开网址
-        const handleLinkClick = (link) => {
-          window.open(link.url, '_blank', 'noopener,noreferrer');
-        };
-
         // 收藏/取消收藏
         const togglePin = (linkId) => {
           const index = pinnedIds.value.indexOf(linkId);
@@ -693,7 +958,9 @@
             pinnedIds.value.push(linkId);
             triggerToast(`"${linkItem?.title}" 已收藏至顶层`, 'success');
           }
-          localStorage.setItem('webnav_pinned_ids_v3', JSON.stringify(pinnedIds.value));
+          try {
+            localStorage.setItem('webnav_pinned_ids_v3', JSON.stringify(pinnedIds.value));
+          } catch (_) {}
         };
 
         // 是否已被收藏
@@ -711,12 +978,13 @@
         };
 
         const scrollToTop = () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
         };
 
         return {
           links,
           categories,
+          currentYear,
           searchQuery,
           activeCategory,
           viewMode,
@@ -725,15 +993,16 @@
           activeCategoriesList,
           filteredLinksMap,
           totalMatchedCount,
+          searchStatusText,
           pinnedIds,
           toasts,
           searchInput,
 
           // 方法
+          sanitizeURL,
           switchCategory,
           resetFilters,
           clearSearch,
-          handleLinkClick,
           togglePin,
           isPinned,
           triggerToast,
@@ -742,37 +1011,6 @@
       }
     }).mount('#app');
   </script>
-
-  <!-- 自定义弹窗过渡动画样式 -->
-  <style>
-    @keyframes scaleIn {
-      from {
-        transform: scale(0.95);
-        opacity: 0;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-    .animate-scaleIn {
-      animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    /* 吐司动画 */
-    .toast-list-enter-active,
-    .toast-list-leave-active {
-      transition: all 0.3s ease;
-    }
-    .toast-list-enter-from {
-      opacity: 0;
-      transform: translateY(20px) scale(0.9);
-    }
-    .toast-list-leave-to {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.9);
-    }
-  </style>
 </body>
 
 </html>
